@@ -1,15 +1,13 @@
-# The name of this view in Looker is " All Logs"
 view: _all_logs {
-  # The sql_table_name parameter indicates the underlying database table
-  # to be used for all fields in this view.
-  sql_table_name: `demo_logs._AllLogs`
-    ;;
-  # No primary key is defined for this view. In order to join this view in an Explore,
-  # define primary_key: yes on a dimension that has no repeated values.
+  # SCHEMA_NAME and LOG_TABLE_NAME are constants set in the manifest file
+  sql_table_name: @{SCHEMA_NAME}.@{LOG_TABLE_NAME} ;;
 
-  # Here's what a typical dimension looks like in LookML.
-  # A dimension is a groupable field that can be used to filter query results.
-  # This dimension will be called "HTTP Request Cache Fill Bytes" in Explore.
+  parameter: search_filter {
+    # change
+    # used for searching across columns in the table
+    suggestable: no
+    type: unquoted
+  }
 
   dimension: http_request__cache_fill_bytes {
     type: number
@@ -129,13 +127,31 @@ view: _all_logs {
   }
 
   dimension: json_payload {
+    hidden: yes
     type: string
     sql: ${TABLE}.json_payload ;;
   }
 
+  dimension: json_payload_string {
+    # change
+    label: "JSON Payload"
+    # Looker currently cannot display the JSON datatype. So need to convert it to STRING to display.
+    type: string
+    sql: TO_JSON_STRING(${json_payload}) ;;
+  }
+
   dimension: labels {
+    hidden: yes
     type: string
     sql: ${TABLE}.labels ;;
+  }
+
+  dimension: labels_string {
+    # change
+    label: "Labels"
+    # Looker currently cannot display the JSON datatype. So need to convert it to STRING to display.
+    type: string
+    sql: TO_JSON_STRING(${labels}) ;;
   }
 
   dimension: log_id {
@@ -860,10 +876,22 @@ view: _all_logs {
   }
 
   dimension: resource__labels {
+    # change
+    hidden: yes
     type: string
     sql: ${TABLE}.resource.labels ;;
     group_label: "Resource"
     group_item_label: "Labels"
+  }
+
+  dimension: resource__labels_string {
+    # change
+    group_label: "Resource"
+    group_item_label: "Labels"
+    label: "Labels"
+    # Looker currently cannot display the JSON datatype. So need to convert it to STRING to display.
+    type: string
+    sql: TO_JSON_STRING(${resource__labels}) ;;
   }
 
   dimension: resource__type {
@@ -940,6 +968,7 @@ view: _all_logs {
     timeframes: [
       raw,
       time,
+      millisecond,
       date,
       week,
       month,
@@ -1398,3 +1427,9 @@ view: _all_logs__proto_payload__audit_log__policy_violation_info__org_policy_vio
     sql: ${policy_type_number} ;;
   }
 }
+
+
+
+view: sec_ops {
+  extends: [_all_logs]
+  }
