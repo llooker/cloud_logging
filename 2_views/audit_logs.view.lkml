@@ -4,23 +4,15 @@ view: audit_logs {
 
 extends: [_all_logs]
 
-##### Protopayload Metadata
-dimension: violation_reason {
-  type: string
-  sql:  JSON_VALUE(proto_payload.audit_log.metadata.violationReason);;
-}
 
-dimension: ingress_violations {
-  sql: JSON_VALUE(proto_payload.audit_log.metadata.ingressViolations) ;;
-}
 
-dimension: violation_type {
-  sql: IF(${ingress_violations} IS NULL, 'ingress', 'egress')  ;;
-}
 
-dimension: metadata_type {
-  sql: JSON_VALUE(proto_payload.audit_log.metadata, '$."@type"') ;;
-}
+  # measure: access_denials {
+  #   description: "Count of Access Grants being Denied by a Service"
+  #   type: count
+  #   filters: [activity_authorization_info.granted : "No"]
+  #   drill_fields: [drill1*]
+  # }
 
 
 }
