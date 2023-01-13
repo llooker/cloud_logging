@@ -87,6 +87,12 @@ explore: _all_logs {
     relationship: one_to_many
   }
 
+  join: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
+    view_label: " All Logs: Proto Payload Audit Log Service Data Policy Delta Binding Deltas"
+    sql: LEFT JOIN UNNEST(JSON_QUERY_ARRAY(${_all_logs.proto_payload__audit_log__service_data__policy_delta__binding_deltas})) AS bindingDelta ;;
+    relationship: one_to_many
+  }
+
   join: _all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info {
     view_label: " All Logs: Proto Payload Audit Log Authentication Info Service Account Delegation Info"
     sql: LEFT JOIN UNNEST(${_all_logs.proto_payload__audit_log__authentication_info__service_account_delegation_info}) as _all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info ;;

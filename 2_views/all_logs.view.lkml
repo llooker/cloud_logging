@@ -257,26 +257,6 @@ view: _all_logs {
     label: "Metadata"
   }
 
-
-##### Protopayload Metadata for VPC logs
-  dimension: violation_reason {
-    type: string
-    sql:  JSON_VALUE(proto_payload.audit_log.metadata.violationReason);;
-  }
-
-  dimension: ingress_violations {
-    sql: JSON_VALUE(proto_payload.audit_log.metadata.ingressViolations) ;;
-  }
-
-  dimension: violation_type {
-    sql: IF(${ingress_violations} IS NULL, 'ingress', 'egress')  ;;
-  }
-
-  dimension: metadata_type {
-    sql: JSON_VALUE(proto_payload.audit_log.metadata, '$."@type"') ;;
-  }
-
-
   dimension: proto_payload__audit_log__method_name {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.method_name ;;
@@ -412,6 +392,13 @@ view: _all_logs {
     group_item_label: "Access Levels"
   }
 
+  dimension: proto_payload__audit_log__service_data__policy_delta__binding_deltas {
+    hidden: yes
+    sql: ${TABLE}.proto_payload.audit_log.service_data.policyDelta.bindingDeltas ;;
+    group_label: "Proto Payload Audit Log Service Data Policy Delta Binding Deltas"
+    group_item_label: "Binding Deltas"
+  }
+
   dimension: proto_payload__audit_log__request_metadata__request_attributes__auth__audiences {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.auth.audiences ;;
@@ -510,9 +497,6 @@ view: _all_logs {
     group_item_label: "Size"
   }
 
-  # Dates and timestamps can be represented in Looker using a dimension group of type: time.
-  # Looker converts dates and timestamps to the specified timeframes within the dimension group.
-
   dimension_group: proto_payload__audit_log__request_metadata__request_attributes_ {
     type: time
     timeframes: [
@@ -603,9 +587,16 @@ view: _all_logs {
     label: "Service Data"
   }
 
-  dimension: proto_payload__audit_log__service_name {
+  dimension: proto_payload__audit_log__service_name_long {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.service_name ;;
+    group_label: "Proto Payload Audit Log"
+    group_item_label: "Service Name (Long)"
+  }
+
+  dimension: proto_payload__audit_log__service_name {
+    type: string
+    sql: SUBSTR(${proto_payload__audit_log__service_name_long}, 0, STRPOS(${proto_payload__audit_log__service_name_long}, ".") -1) ;;
     group_label: "Proto Payload Audit Log"
     group_item_label: "Service Name"
   }
@@ -1062,10 +1053,102 @@ view: _all_logs {
     sql: ${TABLE}.trace_sampled ;;
   }
 
+############# Derived Fields ############
+
+  dimension: is_audit_log {
+    description: "Use to filter on Audit Logs"
+    type: yesno
+    sql:  log_name LIKE "%cloudaudit.googleapis.com%";;
+  }
+
+  dimension: is_dal_log {
+    description: "Use to filter on Data Access Logs"
+    label: "Is Data Access Log"
+    type: yesno
+    sql: ${log_id} = "cloudaudit.googleapis.com/data_access";;
+  }
+
+##### Audit Log Metadata for BQ DAL logs
+
+dimension: job_config_type {
+  sql: JSON_VALUE(proto_payload.audit_log.metadata.jobChange.job.jobConfig.type)  ;;
+}
+
+
+##### Audit Log Metadata for VPC logs
+  dimension: violation_reason {
+    type: string
+    sql:  JSON_VALUE(proto_payload.audit_log.metadata.violationReason);;
+  }
+
+  dimension: ingress_violations {
+    sql: JSON_VALUE(proto_payload.audit_log.metadata.ingressViolations) ;;
+  }
+
+  dimension: violation_type {
+    sql: IF(${ingress_violations} IS NULL, 'ingress', 'egress')  ;;
+  }
+
+  dimension: metadata_type {
+    sql: JSON_VALUE(proto_payload.audit_log.metadata, '$."@type"') ;;
+  }
+
+  # Measures
+
   measure: count {
     type: count
     drill_fields: [detail*]
   }
+
+  # Data Access Logs DAL
+
+  dimension: is_bq_dal_event {
+    label: "Is BigQuery Data Access Event"
+    description: "Data Access Insert or Query"
+    type: yesno
+    sql: ${proto_payload__audit_log__method_name} = "google.cloud.bigquery.v2.JobService.InsertJob" OR
+         ${proto_payload__audit_log__method_name} = "google.cloud.bigquery.v2.JobService.Query" ;;
+  }
+
+  measure: data_access_bq {
+    # 5.01 https://github.com/GoogleCloudPlatform/security-analytics/blob/main/src/5.01/5.01.md
+    label: "Count Data Access - BigQuery"
+    type: count
+    filters: [is_dal_log: "Yes", is_bq_dal_event: "Yes"]
+  }
+
+  dimension: is_query_job {
+    type: yesno
+    sql: ${job_config_type} = "QUERY" ;;
+  }
+
+  measure: billed_bytes {
+    # 5.02
+    type: sum
+    value_format_name: decimal_2
+    sql: CAST(JSON_VALUE(${TABLE}.proto_payload.audit_log.metadata.jobChange.job.jobStats.queryStats.totalBilledBytes) AS INT64) ;;
+  }
+
+  measure: billed_tb {
+    label: "Billed TBs"
+    description: "Billed Terabytes"
+    type: number
+    value_format_name: decimal_2
+    sql: ${billed_bytes} / POWER(2, 40) ;;
+  }
+
+  measure: billed_gb {
+    label: "Billed GBs"
+    description: "Billed Gigabytes"
+    type: number
+    value_format_name: decimal_2
+    sql: ${billed_bytes} / POWER(2, 30) ;;
+  }
+
+
+
+
+
 
   # ----- Sets of fields for drilling ------
   set: detail {
@@ -1110,15 +1193,6 @@ view: _all_logs__proto_payload__request_log__line {
   # measures for this dimension, but you can also add measures of many different aggregates.
   # Click on the type parameter to see all the options in the Quick Help panel on the right.
 
-  measure: total_severity_number {
-    type: sum
-    sql: ${severity_number} ;;
-  }
-
-  measure: average_severity_number {
-    type: average
-    sql: ${severity_number} ;;
-  }
 
   dimension: source_location__file {
     type: string
@@ -1219,19 +1293,7 @@ view: _all_logs__proto_payload__audit_log__authorization_info {
     group_item_label: "Create Time Unix Nanos"
   }
 
-  # A measure is a field that uses a SQL aggregate function. Here are defined sum and average
-  # measures for this dimension, but you can also add measures of many different aggregates.
-  # Click on the type parameter to see all the options in the Quick Help panel on the right.
 
-  measure: total_resource_attributes__create_time_unix_nanos {
-    type: sum
-    sql: ${resource_attributes__create_time_unix_nanos} ;;
-  }
-
-  measure: average_resource_attributes__create_time_unix_nanos {
-    type: average
-    sql: ${resource_attributes__create_time_unix_nanos} ;;
-  }
 
   dimension_group: resource_attributes__delete {
     type: time
@@ -1340,13 +1402,7 @@ view: _all_logs__proto_payload__audit_log__authorization_info {
     group_item_label: "Update Time Unix Nanos"
   }
 
-  ############# Derived Fields ############
 
-  dimension: is_audit_log {
-    description: "Use to filter on Audit Logs"
-    type: yesno
-    sql:  log_name LIKE "%cloudaudit.googleapis.com%";;
-  }
 
 }
 
@@ -1430,6 +1486,47 @@ view: _all_logs__proto_payload__audit_log__request_metadata__request_attributes_
   }
 }
 
+
+view: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
+  # manually added for audit log reporting
+
+  dimension: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
+    type: string
+    sql: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas ;;
+  }
+
+  dimension: action {
+    type: string
+    sql: JSON_VALUE(bindingDelta.action)  ;;
+  }
+
+  dimension: role {
+    type: string
+    sql: JSON_VALUE(bindingDelta.role)  ;;
+  }
+
+  # IAM metrics
+
+  measure: permissions_over_sa {
+    # 2.20 https://github.com/GoogleCloudPlatform/security-analytics
+    label: "Permissions Granted Over SA"
+    description: "Permissions granted to any principal over a service account, for example, to impersonate a service account or create keys for that service account."
+    type: count
+    filters:
+    [_all_logs.resource__type: "service_account", _all_logs.proto_payload__audit_log__method_name: "google.iam.admin.%.SetIAMPolicy", action: "ADD"]
+  }
+
+  measure: permissions_to_impersonate_sa {
+    # 2.21 https://github.com/GoogleCloudPlatform/security-analytics
+    label: "Permissions Granted to Impersonate SA"
+    description: "Permissions granted to impersonate a service account"
+    type: count
+    filters:
+    [_all_logs.resource__type: "service_account", _all_logs.proto_payload__audit_log__method_name: "google.iam.admin.%.SetIAMPolicy", action: "ADD", role: "roles/iam.serviceAccountTokenCreator,
+    roles/iam.serviceAccountUser"]
+  }
+}
+
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Authentication Info Service Account Delegation Info"
 view: _all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info {
   # No primary key is defined for this view. In order to join this view in an Explore,
@@ -1500,17 +1597,5 @@ view: _all_logs__proto_payload__audit_log__policy_violation_info__org_policy_vio
     sql: ${TABLE}.policy_type_number ;;
   }
 
-  # A measure is a field that uses a SQL aggregate function. Here are defined sum and average
-  # measures for this dimension, but you can also add measures of many different aggregates.
-  # Click on the type parameter to see all the options in the Quick Help panel on the right.
 
-  measure: total_policy_type_number {
-    type: sum
-    sql: ${policy_type_number} ;;
-  }
-
-  measure: average_policy_type_number {
-    type: average
-    sql: ${policy_type_number} ;;
-  }
 }
