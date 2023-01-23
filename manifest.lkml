@@ -11,7 +11,8 @@ constant: CONNECTION_NAME {
 
 ## Used in _all_logs.view sql_table_name
 constant: SCHEMA_NAME {
-  value: "demo_logs"
+  value: "looker"
+  #value: "demo_logs"
   export: override_required
 }
 

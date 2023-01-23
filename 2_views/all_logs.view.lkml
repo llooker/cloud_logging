@@ -2,10 +2,50 @@ view: _all_logs {
   # SCHEMA_NAME and LOG_TABLE_NAME are constants set in the manifest file
   sql_table_name: @{SCHEMA_NAME}.@{LOG_TABLE_NAME} ;;
 
+  # parameters
+
   parameter: search_filter {
     # used for searching across columns in the table
     suggestable: no
     type: unquoted
+  }
+
+  parameter: date_granularity {
+    description: "Use to make visualizations with dynamic date granulairty"
+    type: unquoted
+    default_value: "day"
+    allowed_value: {
+      label: "Hour"
+      value: "hour"
+    }
+    allowed_value: {
+      label: "Day"
+      value: "day"
+    }
+    allowed_value: {
+      label: "Week"
+      value: "week"
+    }
+    allowed_value: {
+      label: "Month"
+      value: "month"
+    }
+  }
+
+  dimension: date {
+    description: "For use with the 'Date Granularity' filter"
+    sql:
+    {% if date_granularity._parameter_value == 'hour' %}
+      ${timestamp_hour_of_day}
+    {% elsif date_granularity._parameter_value == 'day' %}
+      ${timestamp_date}
+    {% elsif date_granularity._parameter_value == 'week' %}
+      ${timestamp_week}
+    {% elsif date_granularity._parameter_value == 'month' %}
+      ${timestamp_month}
+    {% else %}
+      ${timestamp_date}
+    {% endif %};;
   }
 
   dimension: http_request__cache_fill_bytes {
@@ -1029,6 +1069,7 @@ view: _all_logs {
       raw,
       time,
       millisecond,
+      hour_of_day,
       date,
       week,
       month,
@@ -1492,7 +1533,7 @@ view: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_d
 
   dimension: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
     type: string
-    sql: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas ;;
+    sql: TO_JSON_STRING(bindingDelta) ;;
   }
 
   dimension: action {
