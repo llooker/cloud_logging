@@ -10,9 +10,14 @@ constant: CONNECTION_NAME {
 }
 
 ## Used in _all_logs.view sql_table_name
+constant: PROJECT_NAME {
+  value: "sd-uxr-001"
+  export: override_required
+}
+
+## Used in _all_logs.view sql_table_name
 constant: SCHEMA_NAME {
   value: "looker"
-  #value: "demo_logs"
   export: override_required
 }
 
@@ -20,4 +25,9 @@ constant: SCHEMA_NAME {
 constant: LOG_TABLE_NAME {
   value: "_AllLogs"
   export: override_optional
+}
+
+constant: COMPANY_DOMAIN {
+  value: "@google.com"
+  export: override_required
 }

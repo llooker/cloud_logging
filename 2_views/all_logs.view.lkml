@@ -1,6 +1,6 @@
 view: _all_logs {
   # SCHEMA_NAME and LOG_TABLE_NAME are constants set in the manifest file
-  sql_table_name: @{SCHEMA_NAME}.@{LOG_TABLE_NAME} ;;
+  sql_table_name: `@{PROJECT_NAME}.@{SCHEMA_NAME}.@{LOG_TABLE_NAME}` ;;
 
   # parameters
 
@@ -243,6 +243,19 @@ view: _all_logs {
     group_item_label: "Principal Email"
   }
 
+  dimension: is_system_or_service_account {
+    type: yesno
+    sql: ${proto_payload__audit_log__authentication_info__principal_email} like 'system:%' OR
+         ${proto_payload__audit_log__authentication_info__principal_email} like '%@%gserviceaccount.com';;
+    group_label: "Proto Payload Audit Log Authentication Info"
+  }
+
+  dimension: is_email_in_company_domain {
+    type: yesno
+    sql: ${proto_payload__audit_log__authentication_info__principal_email} like '%@{COMPANY_DOMAIN}' ;;
+    group_label: "Proto Payload Audit Log Authentication Info"
+  }
+
   dimension: proto_payload__audit_log__authentication_info__principal_subject {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.principal_subject ;;
@@ -374,6 +387,29 @@ view: _all_logs {
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.caller_ip ;;
     group_label: "Proto Payload Audit Log Request Metadata"
     group_item_label: "Caller IP"
+  }
+
+  dimension: caller_ipv4 {
+    #hidden: yes
+    type: number
+    sql: CASE
+         WHEN ${TABLE}.proto_payload.audit_log.request_metadata.caller_ip = 'private' THEN 0
+         WHEN REGEXP_CONTAINS(${TABLE}.proto_payload.audit_log.request_metadata.caller_ip, r":") THEN 0
+         WHEN REGEXP_CONTAINS(${TABLE}.proto_payload.audit_log.request_metadata.caller_ip, r"-") THEN 0
+         ELSE NET.IPV4_TO_INT64(NET.SAFE_IP_FROM_STRING(${TABLE}.proto_payload.audit_log.request_metadata.caller_ip))
+         END;;
+  }
+
+  dimension: class_b {
+    # sql: TRUNC(NET.IPV4_TO_INT64(NET.SAFE_IP_FROM_STRING(${caller_ip}))/(256*256));;
+    sql:
+    CASE
+        WHEN ${TABLE}.proto_payload.audit_log.request_metadata.caller_ip = 'private' THEN 0
+        WHEN REGEXP_CONTAINS(${TABLE}.proto_payload.audit_log.request_metadata.caller_ip, r":") THEN 0
+         WHEN REGEXP_CONTAINS(${TABLE}.proto_payload.audit_log.request_metadata.caller_ip, r"-") THEN 0
+    ELSE TRUNC(NET.IPV4_TO_INT64(NET.IP_FROM_STRING(${TABLE}.proto_payload.audit_log.request_metadata.caller_ip))/(256*256))
+    END     ;;
+    #hidden: yes
   }
 
   dimension: proto_payload__audit_log__request_metadata__caller_network {

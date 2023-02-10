@@ -45,6 +45,16 @@ explore: _all_logs {
     limit: 500
   }
 
+  join: ip_to_geo_mapping {
+    type: inner
+    relationship: many_to_one
+    # note: this only works for IPv4 address right now, not IPv6
+    sql_on:
+    ${ip_to_geo_mapping.class_b} = ${_all_logs.class_b} AND
+    ${_all_logs.caller_ipv4} BETWEEN ${ip_to_geo_mapping.start_ipv4_to_int64}
+    and ${ip_to_geo_mapping.end_ipv4_int64};;
+    }
+
   join: _all_logs__proto_payload__request_log__line {
     view_label: " All Logs: Proto Payload Request Log Line"
     sql: LEFT JOIN UNNEST(${_all_logs.proto_payload__request_log__line}) as _all_logs__proto_payload__request_log__line ;;
