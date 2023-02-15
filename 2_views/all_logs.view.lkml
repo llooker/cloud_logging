@@ -7,7 +7,6 @@ view: _all_logs {
   parameter: search_filter {
     # used for searching across columns in the table
     suggestable: no
-    type: unquoted
   }
 
   parameter: date_granularity {
@@ -1205,8 +1204,15 @@ dimension: job_config_type {
   # Measures
 
   measure: count {
+    label: "Event Count"
     type: count
     drill_fields: [detail*]
+  }
+
+  measure: event_count_from_new_ips {
+    label: "Event Count from New IPs"
+    type: count
+    filters: [user_ip_stats.is_new_ip: "Yes"]
   }
 
   # Data Access Logs DAL
