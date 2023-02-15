@@ -115,3 +115,5 @@ explore: _all_logs {
     relationship: one_to_many
   }
 }
+
+explore: impossible_traveler {}

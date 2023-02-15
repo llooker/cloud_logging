@@ -250,6 +250,12 @@ view: _all_logs {
     group_label: "Proto Payload Audit Log Authentication Info"
   }
 
+  dimension: is_admin {
+    type: yesno
+    sql: ${proto_payload__audit_log__authentication_info__principal_email} LIKE "admin%" ;;
+    group_label: "Proto Payload Audit Log Authentication Info"
+  }
+
   dimension: is_email_in_company_domain {
     type: yesno
     sql: ${proto_payload__audit_log__authentication_info__principal_email} like '%@{COMPANY_DOMAIN}' ;;
@@ -317,6 +323,13 @@ view: _all_logs {
     group_item_label: "Method Name"
   }
 
+  dimension: is_login {
+    type: yesno
+    sql: ${proto_payload__audit_log__service_name_long} = "login.googleapis.com"
+         AND ${proto_payload__audit_log__method_name} LIKE "google.login.LoginService.%";;
+    group_label: "Proto Payload Audit Log"
+  }
+
   dimension: proto_payload__audit_log__num_response_items {
     type: number
     sql: ${TABLE}.proto_payload.audit_log.num_response_items ;;
@@ -327,6 +340,20 @@ view: _all_logs {
   # A measure is a field that uses a SQL aggregate function. Here are defined sum and average
   # measures for this dimension, but you can also add measures of many different aggregates.
   # Click on the type parameter to see all the options in the Quick Help panel on the right.
+
+  measure: login_count {
+    type: count
+    filters: [is_login: "Yes"]
+  }
+
+  measure: login_from_admin {
+    # CSA 1.01
+    type: count
+    filters: [
+        is_login: "Yes",
+        is_admin: "Yes"
+      ]
+  }
 
   measure: total_proto_payload__audit_log__num_response_items {
     type: sum
@@ -1143,6 +1170,11 @@ view: _all_logs {
     label: "Is Data Access Log"
     type: yesno
     sql: ${log_id} = "cloudaudit.googleapis.com/data_access";;
+  }
+
+  dimension: is_load_balancer_log {
+    type: yesno
+    sql: ${resource__type} = 'http_load_balancer' ;;
   }
 
 ##### Audit Log Metadata for BQ DAL logs
