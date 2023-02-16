@@ -1,6 +1,7 @@
 view: user_ip_stats {
   # this is used to determine if a user is using a new IP address compared to their historical use of IPs
   # it is meant to be joined back to the All Logs table for exploratory analysis
+  # CSA 5.31
 
     derived_table: {
       sql:
@@ -20,10 +21,17 @@ view: user_ip_stats {
           ;;
     }
     dimension: principal_email {
+
       description: ""
     }
     dimension: caller_ip {
       description: ""
+    }
+
+    dimension: primary_key {
+      hidden: yes
+      primary_key: yes
+      sql: CONCAT(${principal_email},${caller_ip}) ;;
     }
     dimension_group: first_instance {
       description: "First time user used the IP address"
@@ -67,8 +75,9 @@ view: user_ip_stats {
     }
 
     dimension: is_new_ip {
+      # CSA 5.31
       description: "If user event occurs within X hours of getting a new IP address then considered 'New'"
-      label: "Is New IP"
+      label: "Is New IP for user"
       type: yesno
       sql: ${new_since_hours} <= {% parameter hours_considered_new %} ;;
     }

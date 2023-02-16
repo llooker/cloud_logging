@@ -240,6 +240,10 @@ view: _all_logs {
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.principal_email ;;
     group_label: "Proto Payload Audit Log Authentication Info"
     group_item_label: "Principal Email"
+    link: {
+      label: "User Lookup Dashboard"
+      url: "/dashboards/1782?Email={{ value | url_encode }}"
+    }
   }
 
   dimension: is_system_or_service_account {
@@ -1141,6 +1145,18 @@ view: _all_logs {
     sql: ${TABLE}.timestamp ;;
   }
 
+  measure: min_timestamp {
+    hidden: yes
+    type: date_time
+    sql: MIN(${timestamp_raw}) ;;
+  }
+
+  measure: max_timestamp {
+    hidden: yes
+    type: date_time
+    sql: MAX(${timestamp_raw}) ;;
+  }
+
   dimension: timestamp_unix_nanos {
     type: number
     sql: ${TABLE}.timestamp_unix_nanos ;;
@@ -1164,23 +1180,14 @@ view: _all_logs {
     sql:  log_name LIKE "%cloudaudit.googleapis.com%";;
   }
 
-  dimension: is_dal_log {
-    description: "Use to filter on Data Access Logs"
-    label: "Is Data Access Log"
-    type: yesno
-    sql: ${log_id} = "cloudaudit.googleapis.com/data_access";;
-  }
+
 
   dimension: is_load_balancer_log {
     type: yesno
     sql: ${resource__type} = 'http_load_balancer' ;;
   }
 
-##### Audit Log Metadata for BQ DAL logs
 
-dimension: job_config_type {
-  sql: JSON_VALUE(proto_payload.audit_log.metadata.jobChange.job.jobConfig.type)  ;;
-}
 
 
 ##### Audit Log Metadata for VPC logs
@@ -1211,11 +1218,29 @@ dimension: job_config_type {
 
   measure: event_count_from_new_ips {
     label: "Event Count from New IPs"
+    description: "Events from a user with a new IP address"
     type: count
     filters: [user_ip_stats.is_new_ip: "Yes"]
   }
 
-  # Data Access Logs DAL
+  #####################################################
+  ########## DATA ACCESS LOGS - DAL ###################
+  #####################################################
+
+  dimension: is_dal_log {
+    description: "Use to filter on Data Access Logs"
+    label: "Is Data Access"
+    type: yesno
+    sql: ${log_id} = "cloudaudit.googleapis.com/data_access";;
+  }
+
+  measure: count_dal_event {
+    label: "Count Data Access Events"
+    type: count
+    filters: [is_dal_log: "Yes"]
+  }
+
+  ## BigQuery DAL
 
   dimension: is_bq_dal_event {
     label: "Is BigQuery Data Access Event"
@@ -1225,11 +1250,8 @@ dimension: job_config_type {
          ${proto_payload__audit_log__method_name} = "google.cloud.bigquery.v2.JobService.Query" ;;
   }
 
-  measure: data_access_bq {
-    # 5.01 https://github.com/GoogleCloudPlatform/security-analytics/blob/main/src/5.01/5.01.md
-    label: "Count Data Access - BigQuery"
-    type: count
-    filters: [is_dal_log: "Yes", is_bq_dal_event: "Yes"]
+  dimension: job_config_type {
+    sql: JSON_VALUE(proto_payload.audit_log.metadata.jobChange.job.jobConfig.type)  ;;
   }
 
   dimension: is_query_job {
@@ -1237,8 +1259,15 @@ dimension: job_config_type {
     sql: ${job_config_type} = "QUERY" ;;
   }
 
+  measure: data_access_bq {
+    # CSA 5.01 https://github.com/GoogleCloudPlatform/security-analytics/blob/main/src/5.01/5.01.md
+    label: "Count Data Access - BigQuery"
+    type: count
+    filters: [is_dal_log: "Yes", is_bq_dal_event: "Yes"]
+  }
+
   measure: billed_bytes {
-    # 5.02
+    # CSA 5.02
     type: sum
     value_format_name: decimal_2
     sql: CAST(JSON_VALUE(${TABLE}.proto_payload.audit_log.metadata.jobChange.job.jobStats.queryStats.totalBilledBytes) AS INT64) ;;
@@ -1260,8 +1289,56 @@ dimension: job_config_type {
     sql: ${billed_bytes} / POWER(2, 30) ;;
   }
 
+#################################################
+#### Demo Only - USERS table ####################
+#################################################
 
+  dimension: department {
+    view_label: "Users"
+    type: string
+    sql: 'Finance' ;;
+  }
 
+  dimension: email {
+    view_label: "Users"
+    label: "Principal Email"
+    type: string
+    sql: ${proto_payload__audit_log__authentication_info__principal_email} ;;
+  }
+
+  dimension: employment_status {
+    view_label: "Users"
+    type: string
+    sql: 'Active' ;;
+  }
+
+  dimension: image {
+    view_label: "Users"
+    type: string
+    sql: CONCAT('https://moma-teams-photos.corp.google.com/photos/',${email}) ;;
+    html: <img src="{{value}}" />;;
+  }
+
+  # Dates and timestamps can be represented in Looker using a dimension group of type: time.
+  # Looker converts dates and timestamps to the specified timeframes within the dimension group.
+
+  dimension: start_date {
+    view_label: "Users"
+    type: date_time
+    sql: '2019-02-10' ;;
+  }
+
+  dimension: tenure {
+    view_label: "Users"
+    type: string
+    sql: '3 years, 5 months' ;;
+  }
+
+  measure: user_count {
+    view_label: "Users"
+    type: count_distinct
+    sql: ${proto_payload__audit_log__authentication_info__principal_email} ;;
+  }
 
 
 

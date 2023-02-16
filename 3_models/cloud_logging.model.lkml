@@ -46,7 +46,7 @@ explore: _all_logs {
   }
 
   join: ip_to_geo_mapping {
-    type: inner
+    type: left_outer
     relationship: many_to_one
     # note: this only works for IPv4 address right now, not IPv6
     sql_on:
