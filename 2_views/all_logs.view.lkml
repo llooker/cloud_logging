@@ -1228,6 +1228,7 @@ view: _all_logs {
   #####################################################
 
   dimension: is_dal_log {
+    view_label: "Data Access Logs"
     description: "Use to filter on Data Access Logs"
     label: "Is Data Access"
     type: yesno
@@ -1235,6 +1236,7 @@ view: _all_logs {
   }
 
   measure: count_dal_event {
+    view_label: "Data Access Logs"
     label: "Count Data Access Events"
     type: count
     filters: [is_dal_log: "Yes"]
@@ -1243,6 +1245,8 @@ view: _all_logs {
   ## BigQuery DAL
 
   dimension: is_bq_dal_event {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     label: "Is BigQuery Data Access Event"
     description: "Data Access Insert or Query"
     type: yesno
@@ -1251,15 +1255,21 @@ view: _all_logs {
   }
 
   dimension: job_config_type {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     sql: JSON_VALUE(proto_payload.audit_log.metadata.jobChange.job.jobConfig.type)  ;;
   }
 
   dimension: is_query_job {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     type: yesno
     sql: ${job_config_type} = "QUERY" ;;
   }
 
   measure: data_access_bq {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     # CSA 5.01 https://github.com/GoogleCloudPlatform/security-analytics/blob/main/src/5.01/5.01.md
     label: "Count Data Access - BigQuery"
     type: count
@@ -1267,6 +1277,8 @@ view: _all_logs {
   }
 
   measure: billed_bytes {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     # CSA 5.02
     type: sum
     value_format_name: decimal_2
@@ -1274,6 +1286,8 @@ view: _all_logs {
   }
 
   measure: billed_tb {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     label: "Billed TBs"
     description: "Billed Terabytes"
     type: number
@@ -1282,6 +1296,8 @@ view: _all_logs {
   }
 
   measure: billed_gb {
+    view_label: "Data Access Logs"
+    group_label: "BigQuery"
     label: "Billed GBs"
     description: "Billed Gigabytes"
     type: number
@@ -1316,7 +1332,7 @@ view: _all_logs {
     view_label: "Users"
     type: string
     sql: CONCAT('https://moma-teams-photos.corp.google.com/photos/',${email}) ;;
-    html: <img src="{{value}}" />;;
+    html: <img src="{{value}}"/>;;
   }
 
   # Dates and timestamps can be represented in Looker using a dimension group of type: time.
