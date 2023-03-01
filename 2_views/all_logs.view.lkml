@@ -1,4 +1,4 @@
-view: _all_logs {
+view: all_logs {
   # SCHEMA_NAME and LOG_TABLE_NAME are constants set in the manifest file
   sql_table_name: `@{PROJECT_NAME}.@{SCHEMA_NAME}.@{LOG_TABLE_NAME}` ;;
 
@@ -47,37 +47,139 @@ view: _all_logs {
     {% endif %};;
   }
 
+
+################## MAIN/REQUIRED FIELDS #############################################################
+
+  dimension: log_id {
+    view_label: "1) Main Fields"
+    type: string
+    sql: ${TABLE}.log_id ;;
+  }
+
+  dimension: log_type {
+    description: "Cleaner version of Log ID"
+    view_label: "1) Main Fields"
+    sql: REPLACE(${log_id}, '.googleapis.com/', ' - ') ;;
+
+  }
+
+  dimension: log_name {
+    view_label: "1) Main Fields"
+    type: string
+    sql: ${TABLE}.log_name ;;
+  }
+
+  dimension: insert_id {
+    view_label: "1) Main Fields"
+    description: "A unique identifier for the log entry."
+    type: string
+    sql: ${TABLE}.insert_id ;;
+  }
+
+  dimension: resource__labels {
+    view_label: "1) Main Fields"
+    hidden: yes
+    type: string
+    sql: ${TABLE}.resource.labels ;;
+    group_label: "Resource"
+    group_item_label: "Labels"
+  }
+
+  dimension: resource__labels_string {
+    view_label: "1) Main Fields"
+    # Looker currently cannot display the JSON datatype. So need to convert it to STRING to display.
+    type: string
+    sql: TO_JSON_STRING(${resource__labels}) ;;
+  }
+
+  dimension: resource__type {
+    type: string
+    sql: ${TABLE}.resource.type ;;
+    view_label: "1) Main Fields"
+  }
+
+  dimension: severity {
+    view_label: "1) Main Fields"
+    type: string
+    sql: ${TABLE}.severity ;;
+  }
+
+  dimension: severity_number {
+    view_label: "1) Main Fields"
+    type: number
+    sql: ${TABLE}.severity_number ;;
+  }
+
+  dimension_group: timestamp {
+    view_label: "1) Main Fields"
+    type: time
+    timeframes: [
+      raw,
+      time,
+      millisecond,
+      hour_of_day,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: ${TABLE}.timestamp ;;
+  }
+
+  measure: min_timestamp {
+    hidden: yes
+    type: date_time
+    sql: MIN(${timestamp_raw}) ;;
+  }
+
+  measure: max_timestamp {
+    hidden: yes
+    type: date_time
+    sql: MAX(${timestamp_raw}) ;;
+  }
+
+  dimension: timestamp_unix_nanos {
+    view_label: "1) Main Fields"
+    type: number
+    sql: ${TABLE}.timestamp_unix_nanos ;;
+  }
+
+
+################################## HTTP Request #############################################
+
   dimension: http_request__cache_fill_bytes {
     type: number
     sql: ${TABLE}.http_request.cache_fill_bytes ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Cache Fill Bytes"
   }
 
   dimension: http_request__cache_hit {
     type: yesno
     sql: ${TABLE}.http_request.cache_hit ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Cache Hit"
   }
 
   dimension: http_request__cache_lookup {
     type: yesno
     sql: ${TABLE}.http_request.cache_lookup ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Cache Lookup"
   }
 
   dimension: http_request__cache_validated_with_origin_server {
     type: yesno
     sql: ${TABLE}.http_request.cache_validated_with_origin_server ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Cache Validated with Origin Server"
   }
 
   dimension: http_request__latency__nanos {
     type: number
     sql: ${TABLE}.http_request.latency.nanos ;;
+    view_label: "HTTP Request"
     group_label: "HTTP Request Latency"
     group_item_label: "Nanos"
   }
@@ -85,6 +187,7 @@ view: _all_logs {
   dimension: http_request__latency__seconds {
     type: number
     sql: ${TABLE}.http_request.latency.seconds ;;
+    view_label: "HTTP Request"
     group_label: "HTTP Request Latency"
     group_item_label: "Seconds"
   }
@@ -92,77 +195,74 @@ view: _all_logs {
   dimension: http_request__protocol {
     type: string
     sql: ${TABLE}.http_request.protocol ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Protocol"
   }
 
   dimension: http_request__referer {
     type: string
     sql: ${TABLE}.http_request.referer ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Referer"
   }
 
   dimension: http_request__remote_ip {
     type: string
     sql: ${TABLE}.http_request.remote_ip ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Remote IP"
   }
 
   dimension: http_request__request_method {
     type: string
     sql: ${TABLE}.http_request.request_method ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Request Method"
   }
 
   dimension: http_request__request_size {
     type: number
     sql: ${TABLE}.http_request.request_size ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Request Size"
   }
 
   dimension: http_request__request_url {
     type: string
     sql: ${TABLE}.http_request.request_url ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Request URL"
   }
 
   dimension: http_request__response_size {
     type: number
     sql: ${TABLE}.http_request.response_size ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Response Size"
   }
 
   dimension: http_request__server_ip {
     type: string
     sql: ${TABLE}.http_request.server_ip ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Server IP"
   }
 
   dimension: http_request__status {
     type: number
     sql: ${TABLE}.http_request.status ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "Status"
   }
 
   dimension: http_request__user_agent {
     type: string
     sql: ${TABLE}.http_request.user_agent ;;
-    group_label: "HTTP Request"
+    view_label: "HTTP Request"
     group_item_label: "User Agent"
   }
 
-  dimension: insert_id {
-    type: string
-    sql: ${TABLE}.insert_id ;;
-  }
+###############################################################################
 
   dimension: json_payload {
     hidden: yes
@@ -188,16 +288,6 @@ view: _all_logs {
     # Looker currently cannot display the JSON datatype. So need to convert it to STRING to display.
     type: string
     sql: TO_JSON_STRING(${labels}) ;;
-  }
-
-  dimension: log_id {
-    type: string
-    sql: ${TABLE}.log_id ;;
-  }
-
-  dimension: log_name {
-    type: string
-    sql: ${TABLE}.log_name ;;
   }
 
   dimension: operation__first {
@@ -228,17 +318,19 @@ view: _all_logs {
     group_item_label: "Producer"
   }
 
+#################################### PROTO PAYLOAD  ###########################################
+
   dimension: proto_payload__audit_log__authentication_info__authority_selector {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.authority_selector ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
     group_item_label: "Authority Selector"
   }
 
   dimension: proto_payload__audit_log__authentication_info__principal_email {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.principal_email ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
     group_item_label: "Principal Email"
     link: {
       label: "User Lookup Dashboard"
@@ -250,25 +342,25 @@ view: _all_logs {
     type: yesno
     sql: ${proto_payload__audit_log__authentication_info__principal_email} like 'system:%' OR
          ${proto_payload__audit_log__authentication_info__principal_email} like '%@%gserviceaccount.com';;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
   }
 
   dimension: is_admin {
     type: yesno
     sql: ${proto_payload__audit_log__authentication_info__principal_email} LIKE "admin%" ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
   }
 
   dimension: is_email_in_company_domain {
     type: yesno
     sql: ${proto_payload__audit_log__authentication_info__principal_email} like '%@{COMPANY_DOMAIN}' ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
   }
 
   dimension: proto_payload__audit_log__authentication_info__principal_subject {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.principal_subject ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
     group_item_label: "Principal Subject"
   }
 
@@ -278,21 +370,21 @@ view: _all_logs {
   dimension: proto_payload__audit_log__authentication_info__service_account_delegation_info {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.service_account_delegation_info ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
     group_item_label: "Service Account Delegation Info"
   }
 
   dimension: proto_payload__audit_log__authentication_info__service_account_key_name {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.service_account_key_name ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
     group_item_label: "Service Account Key Name"
   }
 
   dimension: proto_payload__audit_log__authentication_info__third_party_principal {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.authentication_info.third_party_principal ;;
-    group_label: "Proto Payload Audit Log Authentication Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Authentication Info"
     group_item_label: "Third Party Principal"
   }
 
@@ -371,28 +463,28 @@ view: _all_logs {
   dimension: proto_payload__audit_log__policy_violation_info__org_policy_violation_info__payload {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.policy_violation_info.org_policy_violation_info.payload ;;
-    group_label: "Proto Payload Audit Log Policy Violation Info Org Policy Violation Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Policy Violation Info Org Policy Violation Info"
     group_item_label: "Payload"
   }
 
   dimension: proto_payload__audit_log__policy_violation_info__org_policy_violation_info__resource_tags {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.policy_violation_info.org_policy_violation_info.resource_tags ;;
-    group_label: "Proto Payload Audit Log Policy Violation Info Org Policy Violation Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Policy Violation Info Org Policy Violation Info"
     group_item_label: "Resource Tags"
   }
 
   dimension: proto_payload__audit_log__policy_violation_info__org_policy_violation_info__resource_type {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.policy_violation_info.org_policy_violation_info.resource_type ;;
-    group_label: "Proto Payload Audit Log Policy Violation Info Org Policy Violation Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Policy Violation Info Org Policy Violation Info"
     group_item_label: "Resource Type"
   }
 
   dimension: proto_payload__audit_log__policy_violation_info__org_policy_violation_info__violation_info {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.policy_violation_info.org_policy_violation_info.violation_info ;;
-    group_label: "Proto Payload Audit Log Policy Violation Info Org Policy Violation Info"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Policy Violation Info Org Policy Violation Info"
     group_item_label: "Violation Info"
   }
 
@@ -415,7 +507,7 @@ view: _all_logs {
   dimension: proto_payload__audit_log__request_metadata__caller_ip {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.caller_ip ;;
-    group_label: "Proto Payload Audit Log Request Metadata"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata"
     group_item_label: "Caller IP"
   }
 
@@ -445,161 +537,161 @@ view: _all_logs {
   dimension: proto_payload__audit_log__request_metadata__caller_network {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.caller_network ;;
-    group_label: "Proto Payload Audit Log Request Metadata"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata"
     group_item_label: "Caller Network"
   }
 
   dimension: proto_payload__audit_log__request_metadata__caller_supplied_user_agent {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.caller_supplied_user_agent ;;
-    group_label: "Proto Payload Audit Log Request Metadata"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata"
     group_item_label: "Caller Supplied User Agent"
   }
 
   dimension: proto_payload__audit_log__request_metadata__destination_attributes__ip {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.destination_attributes.ip ;;
-    group_label: "Proto Payload Audit Log Request Metadata Destination Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Destination Attributes"
     group_item_label: "IP"
   }
 
   dimension: proto_payload__audit_log__request_metadata__destination_attributes__labels {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.destination_attributes.labels ;;
-    group_label: "Proto Payload Audit Log Request Metadata Destination Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Destination Attributes"
     group_item_label: "Labels"
   }
 
   dimension: proto_payload__audit_log__request_metadata__destination_attributes__port {
     type: number
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.destination_attributes.port ;;
-    group_label: "Proto Payload Audit Log Request Metadata Destination Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Destination Attributes"
     group_item_label: "Port"
   }
 
   dimension: proto_payload__audit_log__request_metadata__destination_attributes__principal {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.destination_attributes.principal ;;
-    group_label: "Proto Payload Audit Log Request Metadata Destination Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Destination Attributes"
     group_item_label: "Principal"
   }
 
   dimension: proto_payload__audit_log__request_metadata__destination_attributes__region_code {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.destination_attributes.region_code ;;
-    group_label: "Proto Payload Audit Log Request Metadata Destination Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Destination Attributes"
     group_item_label: "Region Code"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__auth__access_levels {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.auth.access_levels ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes Auth"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes Auth"
     group_item_label: "Access Levels"
   }
 
   dimension: proto_payload__audit_log__service_data__policy_delta__binding_deltas {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.service_data.policyDelta.bindingDeltas ;;
-    group_label: "Proto Payload Audit Log Service Data Policy Delta Binding Deltas"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Service Data Policy Delta Binding Deltas"
     group_item_label: "Binding Deltas"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__auth__audiences {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.auth.audiences ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes Auth"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes Auth"
     group_item_label: "Audiences"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__auth__claims {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.auth.claims ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes Auth"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes Auth"
     group_item_label: "Claims"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__auth__presenter {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.auth.presenter ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes Auth"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes Auth"
     group_item_label: "Presenter"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__auth__principal {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.auth.principal ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes Auth"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes Auth"
     group_item_label: "Principal"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__headers {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.headers ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Headers"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__host {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.host ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Host"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__id {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.id ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "ID"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__method {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.method ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Method"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__path {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.path ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Path"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__protocol {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.protocol ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Protocol"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__query {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.query ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Query"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__reason {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.reason ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Reason"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__scheme {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.scheme ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Scheme"
   }
 
   dimension: proto_payload__audit_log__request_metadata__request_attributes__size {
     type: number
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.size ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Size"
   }
 
@@ -620,21 +712,21 @@ view: _all_logs {
   dimension: proto_payload__audit_log__request_metadata__request_attributes__time_unix_nanos {
     type: number
     sql: ${TABLE}.proto_payload.audit_log.request_metadata.request_attributes.time_unix_nanos ;;
-    group_label: "Proto Payload Audit Log Request Metadata Request Attributes"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Request Metadata Request Attributes"
     group_item_label: "Time Unix Nanos"
   }
 
   dimension: proto_payload__audit_log__resource_location__current_locations {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.resource_location.current_locations ;;
-    group_label: "Proto Payload Audit Log Resource Location"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Resource Location"
     group_item_label: "Current Locations"
   }
 
   dimension: proto_payload__audit_log__resource_location__original_locations {
     hidden: yes
     sql: ${TABLE}.proto_payload.audit_log.resource_location.original_locations ;;
-    group_label: "Proto Payload Audit Log Resource Location"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Resource Location"
     group_item_label: "Original Locations"
   }
 
@@ -710,7 +802,7 @@ view: _all_logs {
   dimension: proto_payload__audit_log__status__code {
     type: number
     sql: ${TABLE}.proto_payload.audit_log.status.code ;;
-    group_label: "Proto Payload Audit Log Status"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Status"
     group_item_label: "Code"
   }
 
@@ -718,14 +810,14 @@ view: _all_logs {
     hidden: yes
     type: string
     sql: ${TABLE}.proto_payload.audit_log.status.details ;;
-    group_label: "Proto Payload Audit Log Status"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Status"
     group_item_label: "Details"
   }
 
   dimension: proto_payload__audit_log__status__details_string {
     type: string
     sql: TO_JSON_STRING(${TABLE}.proto_payload.audit_log.status.details) ;;
-    group_label: "Proto Payload Audit Log Status"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Status"
     group_item_label: "Details"
     label: "Details"
   }
@@ -733,7 +825,7 @@ view: _all_logs {
   dimension: proto_payload__audit_log__status__message {
     type: string
     sql: ${TABLE}.proto_payload.audit_log.status.message ;;
-    group_label: "Proto Payload Audit Log Status"
+    view_label: "3) Audit Log - Proto Payload"    group_label: "Status"
     group_item_label: "Message"
   }
 
@@ -1043,39 +1135,7 @@ view: _all_logs {
     sql: ${TABLE}.receive_timestamp_unix_nanos ;;
   }
 
-  dimension: resource__labels {
-    hidden: yes
-    type: string
-    sql: ${TABLE}.resource.labels ;;
-    group_label: "Resource"
-    group_item_label: "Labels"
-  }
 
-  dimension: resource__labels_string {
-    group_label: "Resource"
-    group_item_label: "Labels"
-    label: "Labels"
-    # Looker currently cannot display the JSON datatype. So need to convert it to STRING to display.
-    type: string
-    sql: TO_JSON_STRING(${resource__labels}) ;;
-  }
-
-  dimension: resource__type {
-    type: string
-    sql: ${TABLE}.resource.type ;;
-    group_label: "Resource"
-    group_item_label: "Type"
-  }
-
-  dimension: severity {
-    type: string
-    sql: ${TABLE}.severity ;;
-  }
-
-  dimension: severity_number {
-    type: number
-    sql: ${TABLE}.severity_number ;;
-  }
 
   dimension: source_location__file {
     type: string
@@ -1129,38 +1189,7 @@ view: _all_logs {
     sql: ${TABLE}.text_payload ;;
   }
 
-  dimension_group: timestamp {
-    type: time
-    timeframes: [
-      raw,
-      time,
-      millisecond,
-      hour_of_day,
-      date,
-      week,
-      month,
-      quarter,
-      year
-    ]
-    sql: ${TABLE}.timestamp ;;
-  }
 
-  measure: min_timestamp {
-    hidden: yes
-    type: date_time
-    sql: MIN(${timestamp_raw}) ;;
-  }
-
-  measure: max_timestamp {
-    hidden: yes
-    type: date_time
-    sql: MAX(${timestamp_raw}) ;;
-  }
-
-  dimension: timestamp_unix_nanos {
-    type: number
-    sql: ${TABLE}.timestamp_unix_nanos ;;
-  }
 
   dimension: trace {
     type: string
@@ -1374,7 +1403,7 @@ view: _all_logs {
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Request Log Line"
-view: _all_logs__proto_payload__request_log__line {
+view: all_logs__proto_payload__request_log__line {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1447,7 +1476,7 @@ view: _all_logs__proto_payload__request_log__line {
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Authorization Info"
-view: _all_logs__proto_payload__audit_log__authorization_info {
+view: all_logs__proto_payload__audit_log__authorization_info {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1615,7 +1644,7 @@ view: _all_logs__proto_payload__audit_log__authorization_info {
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Request Log Source Reference"
-view: _all_logs__proto_payload__request_log__source_reference {
+view: all_logs__proto_payload__request_log__source_reference {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1635,7 +1664,7 @@ view: _all_logs__proto_payload__request_log__source_reference {
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Resource Location Current Locations"
-view: _all_logs__proto_payload__audit_log__resource_location__current_locations {
+view: all_logs__proto_payload__audit_log__resource_location__current_locations {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1650,7 +1679,7 @@ view: _all_logs__proto_payload__audit_log__resource_location__current_locations 
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Resource Location Original Locations"
-view: _all_logs__proto_payload__audit_log__resource_location__original_locations {
+view: all_logs__proto_payload__audit_log__resource_location__original_locations {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1665,7 +1694,7 @@ view: _all_logs__proto_payload__audit_log__resource_location__original_locations
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Request Metadata Request Attributes Auth Audiences"
-view: _all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__audiences {
+view: all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__audiences {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1680,7 +1709,7 @@ view: _all_logs__proto_payload__audit_log__request_metadata__request_attributes_
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Request Metadata Request Attributes Auth Access Levels"
-view: _all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__access_levels {
+view: all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__access_levels {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1695,7 +1724,7 @@ view: _all_logs__proto_payload__audit_log__request_metadata__request_attributes_
 }
 
 
-view: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
+view: all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
   # manually added for audit log reporting
 
   dimension: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
@@ -1721,7 +1750,7 @@ view: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_d
     description: "Permissions granted to any principal over a service account, for example, to impersonate a service account or create keys for that service account."
     type: count
     filters:
-    [_all_logs.resource__type: "service_account", _all_logs.proto_payload__audit_log__method_name: "google.iam.admin.%.SetIAMPolicy", action: "ADD"]
+    [all_logs.resource__type: "service_account", all_logs.proto_payload__audit_log__method_name: "google.iam.admin.%.SetIAMPolicy", action: "ADD"]
   }
 
   measure: permissions_to_impersonate_sa {
@@ -1730,13 +1759,14 @@ view: _all_logs__proto_payload__audit_log__service_data__policy_delta__binding_d
     description: "Permissions granted to impersonate a service account"
     type: count
     filters:
-    [_all_logs.resource__type: "service_account", _all_logs.proto_payload__audit_log__method_name: "google.iam.admin.%.SetIAMPolicy", action: "ADD", role: "roles/iam.serviceAccountTokenCreator,
+    [all_logs.resource__type: "service_account", all_logs.proto_payload__audit_log__method_name: "google.iam.admin.%.SetIAMPolicy", action: "ADD", role: "roles/iam.serviceAccountTokenCreator,
     roles/iam.serviceAccountUser"]
   }
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Authentication Info Service Account Delegation Info"
-view: _all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info {
+view: all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info {
+  view_label: "test"
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
@@ -1772,7 +1802,7 @@ view: _all_logs__proto_payload__audit_log__authentication_info__service_account_
 }
 
 # The name of this view in Looker is " All Logs Proto Payload Audit Log Policy Violation Info Org Policy Violation Info Violation Info"
-view: _all_logs__proto_payload__audit_log__policy_violation_info__org_policy_violation_info__violation_info {
+view: all_logs__proto_payload__audit_log__policy_violation_info__org_policy_violation_info__violation_info {
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 

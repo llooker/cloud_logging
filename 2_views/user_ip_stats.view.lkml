@@ -49,7 +49,7 @@ view: user_ip_stats {
       description: "Num days the user had used the IP at the time of the event"
       type: duration_day
       sql_start: ${first_instance_raw} ;;
-      sql_end: ${_all_logs.timestamp_raw} ;;
+      sql_end: ${all_logs.timestamp_raw} ;;
     }
 
   dimension: new_since_minutes {
@@ -57,7 +57,7 @@ view: user_ip_stats {
     description: "Num minutes the user had used the IP at the time of the event"
     type: duration_minute
     sql_start: ${first_instance_raw} ;;
-    sql_end: ${_all_logs.timestamp_raw} ;;
+    sql_end: ${all_logs.timestamp_raw} ;;
   }
 
   dimension: new_since_hours {
@@ -65,7 +65,7 @@ view: user_ip_stats {
     description: "Num hours the user had used the IP at the time of the event"
     type: duration_hour
     sql_start: ${first_instance_raw} ;;
-    sql_end: ${_all_logs.timestamp_raw} ;;
+    sql_end: ${all_logs.timestamp_raw} ;;
   }
 
     parameter: hours_considered_new {
