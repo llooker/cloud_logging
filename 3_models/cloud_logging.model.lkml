@@ -64,61 +64,61 @@ explore: all_logs {
   }
 
   join: all_logs__proto_payload__request_log__line {
-    view_label: "All Logs: Proto Payload Request Log Line"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__request_log__line}) as all_logs__proto_payload__request_log__line ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__authorization_info {
-    view_label: "All Logs: Proto Payload Audit Log Authorization Info"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__authorization_info}) as all_logs__proto_payload__audit_log__authorization_info ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__request_log__source_reference {
-    view_label: "All Logs: Proto Payload Request Log Source Reference"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__request_log__source_reference}) as all_logs__proto_payload__request_log__source_reference ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__resource_location__current_locations {
-    view_label: "All Logs: Proto Payload Audit Log Resource Location Current Locations"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__resource_location__current_locations}) as all_logs__proto_payload__audit_log__resource_location__current_locations ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__resource_location__original_locations {
-    view_label: "All Logs: Proto Payload Audit Log Resource Location Original Locations"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__resource_location__original_locations}) as all_logs__proto_payload__audit_log__resource_location__original_locations ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__audiences {
-    view_label: "All Logs: Proto Payload Audit Log Request Metadata Request Attributes Auth Audiences"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__request_metadata__request_attributes__auth__audiences}) as all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__audiences ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__access_levels {
-    view_label: "All Logs: Proto Payload Audit Log Request Metadata Request Attributes Auth Access Levels"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__request_metadata__request_attributes__auth__access_levels}) as all_logs__proto_payload__audit_log__request_metadata__request_attributes__auth__access_levels ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__service_data__policy_delta__binding_deltas {
-    view_label: "All Logs: Proto Payload Audit Log Service Data Policy Delta Binding Deltas"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(JSON_QUERY_ARRAY(${all_logs.proto_payload__audit_log__service_data__policy_delta__binding_deltas})) AS bindingDelta ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info {
-    view_label: "All Logs: Proto Payload Audit Log Authentication Info Service Account Delegation Info"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__authentication_info__service_account_delegation_info}) as all_logs__proto_payload__audit_log__authentication_info__service_account_delegation_info ;;
     relationship: one_to_many
   }
 
   join: all_logs__proto_payload__audit_log__policy_violation_info__org_policy_violation_info__violation_info {
-    view_label: "All Logs: Proto Payload Audit Log Policy Violation Info Org Policy Violation Info Violation Info"
+    view_label: "3) Audit Log - Proto Payload"
     sql: LEFT JOIN UNNEST(${all_logs.proto_payload__audit_log__policy_violation_info__org_policy_violation_info__violation_info}) as all_logs__proto_payload__audit_log__policy_violation_info__org_policy_violation_info__violation_info ;;
     relationship: one_to_many
   }
