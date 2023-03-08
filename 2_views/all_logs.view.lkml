@@ -7,6 +7,7 @@ view: all_logs {
   parameter: search_filter {
     # used for searching across columns in the table
     suggestable: no
+    type: unquoted
   }
 
   parameter: date_granularity {
@@ -1256,24 +1257,17 @@ view: all_logs {
   ########## DATA ACCESS LOGS - DAL ###################
   #####################################################
 
-  dimension: is_dal_log {
-    view_label: "Data Access Logs"
-    description: "Use to filter on Data Access Logs"
-    label: "Is Data Access"
-    type: yesno
-    sql: ${log_id} = "cloudaudit.googleapis.com/data_access";;
-  }
-
   measure: count_dal_event {
     view_label: "Data Access Logs"
     label: "Count Data Access Events"
     type: count
-    filters: [is_dal_log: "Yes"]
+    filters: [log_id: "cloudaudit.googleapis.com/data_access"]
   }
 
   ## BigQuery DAL
 
   dimension: is_bq_dal_event {
+    #5.01 - BQ records duplicate events one with an old method name, and another with a v2 method name. So need to filter on the v2's to make sure you don't count dupes.
     view_label: "Data Access Logs"
     group_label: "BigQuery"
     label: "Is BigQuery Data Access Event"
@@ -1302,7 +1296,7 @@ view: all_logs {
     # CSA 5.01 https://github.com/GoogleCloudPlatform/security-analytics/blob/main/src/5.01/5.01.md
     label: "Count Data Access - BigQuery"
     type: count
-    filters: [is_dal_log: "Yes", is_bq_dal_event: "Yes"]
+    filters: [log_id: "cloudaudit.googleapis.com/data_access", is_bq_dal_event: "Yes"]
   }
 
   measure: billed_bytes {
@@ -1322,6 +1316,7 @@ view: all_logs {
     type: number
     value_format_name: decimal_2
     sql: ${billed_bytes} / POWER(2, 40) ;;
+    html: {{rendered_value}}  TB ;;
   }
 
   measure: billed_gb {
@@ -1332,6 +1327,7 @@ view: all_logs {
     type: number
     value_format_name: decimal_2
     sql: ${billed_bytes} / POWER(2, 30) ;;
+    html: {{rendered_value}} GB ;;
   }
 
 #################################################
