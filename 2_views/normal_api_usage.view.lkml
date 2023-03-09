@@ -73,7 +73,12 @@ view: normal_api_usage {
 
   }
 
-  dimension: principal_email {}
+  dimension: principal_email {
+    link: {
+      label: "User Lookup"
+      url: "@{LOOKER_URL}/dashboards/cloud_logging::user_lookup"
+    }
+  }
 
   dimension: is_system_or_service_account {
     type: yesno

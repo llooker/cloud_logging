@@ -419,9 +419,9 @@ view: all_logs {
     group_item_label: "Method Name"
   }
 
-  measure: test {
-    type: string
-    sql: ARRAY_AGG(DISTINCT proto_payload.audit_log.method_name IGNORE NULLS) ;;
+  measure: total_methods_used {
+    type: count_distinct
+    sql: ${proto_payload__audit_log__method_name} ;;
   }
 
   dimension: is_login {
