@@ -419,6 +419,11 @@ view: all_logs {
     group_item_label: "Method Name"
   }
 
+  measure: test {
+    type: string
+    sql: ARRAY_AGG(DISTINCT proto_payload.audit_log.method_name IGNORE NULLS) ;;
+  }
+
   dimension: is_login {
     type: yesno
     sql: ${proto_payload__audit_log__service_name_long} = "login.googleapis.com"
@@ -1246,12 +1251,7 @@ view: all_logs {
     drill_fields: [detail*]
   }
 
-  measure: event_count_from_new_ips {
-    label: "Event Count from New IPs"
-    description: "Events from a user with a new IP address"
-    type: count
-    filters: [user_ip_stats.is_new_ip: "Yes"]
-  }
+
 
   #####################################################
   ########## DATA ACCESS LOGS - DAL ###################

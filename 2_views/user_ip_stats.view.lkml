@@ -86,4 +86,11 @@ view: user_ip_stats {
       type: sum
       sql: ${TABLE}.count ;;
     }
+
+  measure: event_count_from_new_ips {
+    #label: "Event Count from New IPs"
+    description: "Events from a user with a new IP address"
+    type: count
+    filters: [is_new_ip: "Yes"]
+  }
   }

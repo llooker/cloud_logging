@@ -125,3 +125,12 @@ explore: all_logs {
 }
 
 explore: impossible_traveler {}
+
+explore: normal_api_usage {
+
+  join: all_logs  {
+    relationship: one_to_many
+    sql_on: ${normal_api_usage.principal_email} =  ${all_logs.proto_payload__audit_log__authentication_info__principal_email}
+      AND ${normal_api_usage.history_date} = ${all_logs.timestamp_date} ;;
+  }
+}
