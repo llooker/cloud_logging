@@ -127,6 +127,16 @@ explore: all_logs {
 explore: impossible_traveler {}
 
 explore: normal_api_usage {
+  label: "Abnormal API Usage"
+  view_label: "0) Normal API Usage"
+  description: "Compare API usage against historical norms to find abnormal usage patterns"
+
+  always_filter: {
+    filters: [normal_api_usage.date: "last 1 days"]
+    filters: [normal_api_usage.historical_date: "last 90 days"]
+    filters: [normal_api_usage.standard_deviation: "3"]
+    filters: [normal_api_usage.exceeds_threshold: "Yes"]
+  }
 
   join: all_logs  {
     relationship: one_to_many
