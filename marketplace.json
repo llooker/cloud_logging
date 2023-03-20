@@ -1,0 +1,37 @@
+{
+  "label": "Cloud Logging - Log Analytics",
+  "category_label": "Models",
+  "branding": {
+    "image_uri": "https://marketplace-api.looker.com/block-icons/cortex_icon.png",
+    "tagline": "Explore, report, and alert on your logs stored in Google Cloud Logging’s Log Analytics including application logs, Cloud Audit logs and network logs."
+  },
+
+  "constants": {
+    "CONNECTION_NAME": {
+      "label": "Connection Name",
+      "value_constraint": "connection"
+    },
+    "PROJECT_NAME": {
+      "label": "Project Name"
+    },
+    "SCHEMA_NAME": {
+      "label": "Schema Name"
+    },
+     "LOG_TABLE_NAME": {
+      "label": "Log Table Name"
+    },
+    "COMPANY_DOMAIN": {
+      "label": "Company Domain"
+    }
+    "LOOKER_URL": {
+      "label": "Looker URL"
+    }
+  },
+      "models": [
+        {
+            "name": "cloud_logging",
+            "connection_constant": "CONNECTION_NAME"
+        }
+    ]
+  
+}
